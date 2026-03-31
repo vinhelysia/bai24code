@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giải thích Hàm Python Trực Quan - Bài 24</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f3f4f6; 
+        }
+        
+        /* Code Editor Style (VS Code Dark Theme Inspired) */
+        .editor { 
+            background-color: #1e1e1e; 
+            color: #d4d4d4; 
+            font-family: 'Consolas', 'Courier New', monospace; 
+            border-radius: 12px; 
+            padding: 24px; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
+            line-height: 1.7; 
+            font-size: 15px; 
+            overflow-x: auto; 
+        }
+        
+        /* Syntax Highlighting */
+        .keyword { color: #c586c0; } /* Python keywords */
+        .string { color: #ce9178; } /* Strings */
+        .comment { color: #6a9955; } /* Comments */
+        .variable { color: #9cdcfe; }
+        .number { color: #b5cea8; }
+
+        /* Interactive Elements styling - Functions */
+        .interactive {
+            position: relative;
+            color: #dcdcaa; 
+            font-weight: bold;
+            cursor: pointer;
+            border-bottom: 2px dashed #dcdcaa;
+            transition: all 0.2s ease;
+            display: inline-block;
+        }
+        
+        .interactive:hover, .interactive.active {
+            background-color: rgba(220, 220, 170, 0.2);
+            border-radius: 4px;
+        }
+
+        /* Specific colors for different token types */
+        .interactive[data-key="string_literal"],
+        .interactive[data-key="immutable"] {
+            color: #ce9178;
+            border-bottom-color: #ce9178;
+        }
+        .interactive[data-key="string_literal"]:hover, .interactive[data-key="string_literal"].active,
+        .interactive[data-key="immutable"]:hover, .interactive[data-key="immutable"].active {
+            background-color: rgba(206, 145, 120, 0.2);
+        }
+
+        .interactive[data-key="loop_index"],
+        .interactive[data-key="loop_char"],
+        .interactive[data-key="in_operator"] {
+            color: #c586c0;
+            border-bottom-color: #c586c0;
+        }
+        .interactive[data-key="loop_index"]:hover, .interactive[data-key="loop_index"].active,
+        .interactive[data-key="loop_char"]:hover, .interactive[data-key="loop_char"].active,
+        .interactive[data-key="in_operator"]:hover, .interactive[data-key="in_operator"].active {
+            background-color: rgba(197, 134, 192, 0.2);
+        }
+
+        .interactive[data-key="indexing"] {
+            color: #9cdcfe;
+            border-bottom-color: #9cdcfe;
+        }
+        .interactive[data-key="indexing"]:hover, .interactive[data-key="indexing"].active {
+            background-color: rgba(156, 220, 254, 0.2);
+        }
+
+        /* Floating Tooltip Box */
+        #tooltip {
+            position: absolute;
+            width: 340px;
+            background-color: #2563eb;
+            color: white;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            z-index: 1000;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        #tooltip.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* CSS Arrow pointing DOWN */
+        #tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%; 
+            left: 50%;
+            margin-left: -10px;
+            border-width: 10px;
+            border-style: solid;
+            border-color: #2563eb transparent transparent transparent;
+        }
+
+        /* CSS Arrow pointing UP */
+        #tooltip.bottom-placement::after {
+            top: -20px;
+            border-color: transparent transparent #2563eb transparent;
+        }
+
+        /* Dot decoration inside the window */
+        .window-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .control-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .dot-red { background-color: #ff5f56; }
+        .dot-yellow { background-color: #ffbd2e; }
+        .dot-green { background-color: #27c93f; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-10 px-4 md:px-8">
+
+    <div class="max-w-4xl w-full">
+        <h1 class="text-3xl font-bold text-gray-800 mb-3 text-center">Sơ đồ Bài 24: Xâu ký tự (Strings)</h1>
+        <p class="text-gray-600 text-center mb-8 text-lg">
+            Hãy <strong class="text-blue-600">bấm vào các từ có nét đứt</strong> để xem cách máy tính hiểu và xử lý xâu ký tự.
+        </p>
+
+        <!-- Code Editor -->
+        <div class="editor relative mb-8">
+            <div class="window-controls">
+                <div class="control-dot dot-red"></div>
+                <div class="control-dot dot-yellow"></div>
+                <div class="control-dot dot-green"></div>
+            </div>
+            
+            <span class="comment"># 1. Khởi tạo và đếm số lượng ký tự</span><br>
+            <span class="variable">s</span> = <span class="interactive" data-key="string_literal">"Tin học 11"</span><br>
+            <span class="variable">so_ky_tu</span> = <span class="interactive" data-key="len">len</span>(<span class="variable">s</span>)<br>
+            <span class="interactive" data-key="print">print</span>(<span class="string">"Chiều dài của xâu:"</span>, <span class="variable">so_ky_tu</span>) <span class="comment"># Kết quả: 10</span><br>
+            <br>
+            <span class="comment"># 2. Truy cập bằng chỉ số (Index) và Tính bất biến</span><br>
+            <span class="interactive" data-key="print">print</span>(<span class="string">"Ký tự đầu tiên:"</span>, <span class="interactive" data-key="indexing">s[0]</span>) <span class="comment"># Kết quả: 'T'</span><br>
+            <span class="comment"># <span class="interactive" data-key="immutable">s[0] = "t"</span>  <-- LỖI TYPE ERROR! Xâu không cho phép sửa từng ký tự</span><br>
+            <br>
+            <span class="comment"># 3. Duyệt xâu bằng chỉ số (khi cần biết vị trí)</span><br>
+            <span class="interactive" data-key="loop_index"><span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="interactive" data-key="range">range</span>(<span class="interactive" data-key="len">len</span>(<span class="variable">s</span>)):</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="interactive" data-key="print">print</span>(<span class="variable">s</span>[<span class="variable">i</span>], <span class="variable">end</span>=<span class="string">"-"</span>)<br>
+            <br>
+            <span class="interactive" data-key="print">print</span>()<br>
+            <br>
+            <span class="comment"># 4. Duyệt trực tiếp từng ký tự (nhanh, gọn)</span><br>
+            <span class="interactive" data-key="loop_char"><span class="keyword">for</span> <span class="variable">ch</span> <span class="keyword">in</span> <span class="variable">s</span>:</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="interactive" data-key="print">print</span>(<span class="variable">ch</span>, <span class="variable">end</span>=<span class="string">"*"</span>)<br>
+            <br>
+            <br>
+            <span class="comment"># 5. Kiểm tra xâu con</span><br>
+            <span class="keyword">if</span> <span class="string">"học"</span> <span class="interactive" data-key="in_operator">in</span> <span class="variable">s</span>:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="interactive" data-key="print">print</span>(<span class="string">"\nTìm thấy từ 'học'!"</span>)<br>
+        </div>
+
+        <!-- Static Box -->
+        <div id="instruction-box" class="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 text-blue-800 shadow-sm text-center transition-all duration-300">
+            <svg class="w-8 h-8 mx-auto mb-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+            <p class="font-medium text-lg">Bấm vào một cấu trúc ở đoạn code trên để xem máy tính đang xử lý xâu ký tự như thế nào.</p>
+        </div>
+    </div>
+
+    <!-- Floating Tooltip -->
+    <div id="tooltip">Nội dung giải thích sẽ nằm ở đây...</div>
+
+    <script>
+        const explanations = {
+            'string_literal': '<strong class="text-xl block mb-2 text-yellow-300">Xâu ký tự (String)</strong> Tập hợp các ký tự được đặt trong cặp dấu nháy kép <code>""</code> hoặc nháy đơn <code>\'\'</code>. Mọi thứ bên trong, kể cả <strong>khoảng trắng (dấu cách)</strong> đều được tính là dữ liệu.',
+            'len': '<strong class="text-xl block mb-2 text-yellow-300">Hàm đếm chiều dài len()</strong> Đếm xem có tổng cộng bao nhiêu ký tự trong xâu (kể cả dấu cách). Ví dụ: "Tin học 11" có 10 ký tự -> len trả về 10.',
+            'indexing': '<strong class="text-xl block mb-2 text-yellow-300">Chỉ số (Index)</strong> Dùng cặp ngoặc vuông <code>[]</code> để truy cập đến 1 ký tự duy nhất. Trong Python, ký tự đầu tiên luôn nằm ở chỉ số <strong>0</strong>. Do đó <code>s[0]</code> sẽ lấy ra chữ "T".',
+            'immutable': '<strong class="text-xl block mb-2 text-yellow-300">Tính Bất Biến (Immutable)</strong> Khác với danh sách (List), xâu giống như được "khắc trên đá". Bạn có thể đem ra đọc, in, nhưng <strong>KHÔNG THỂ</strong> dùng lệnh gán để sửa hoặc xóa từng ký tự bên trong nó.',
+            'loop_index': '<strong class="text-xl block mb-2 text-yellow-300">Duyệt qua chỉ số</strong> Biến <code>i</code> đóng vai trò là số thứ tự (từ 0 đến 9). Muốn lấy được ký tự ra thì ta bắt buộc phải gọi thông qua cú pháp <code>s[i]</code>. Dùng cách này khi bạn cần làm toán với vị trí.',
+            'range': '<strong class="text-xl block mb-2 text-yellow-300">range(len(s))</strong> Vì <code>len(s)</code> là 10, nên <code>range(10)</code> sẽ sinh ra dãy số: 0, 1, 2, ..., 9. Nó khớp hoàn toàn với toàn bộ bộ chỉ số của xâu.',
+            'loop_char': '<strong class="text-xl block mb-2 text-yellow-300">Duyệt trực tiếp ký tự</strong> Biến <code>ch</code> sẽ tự động trích xuất lần lượt từng ký tự (T, i, n...) ra ngoài. Cách này code ngắn hơn, dễ đọc hơn, dùng khi bạn không quan tâm đến vị trí.',
+            'in_operator': '<strong class="text-xl block mb-2 text-yellow-300">Toán tử "in"</strong> Kiểm tra xem vế trái có nằm hoàn toàn bên trong vế phải không. Trả về <code>True</code> nếu chuỗi "học" xuất hiện liền nhau bên trong xâu s, ngược lại là <code>False</code>.',
+            'print': '<strong class="text-xl block mb-2 text-yellow-300">Hàm in print()</strong> Tham số <code>end="-"</code> hoặc <code>end="*"</code> giúp máy tính <strong>không tự động xuống dòng</strong> sau khi in, mà thay bằng dấu gạch ngang/dấu sao để nối tiếp các kết quả trên cùng 1 hàng.'
+        };
+
+        const interactives = document.querySelectorAll('.interactive');
+        const tooltip = document.getElementById('tooltip');
+        const instructionBox = document.getElementById('instruction-box');
+
+        let activeElement = null;
+
+        interactives.forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+
+                interactives.forEach(i => i.classList.remove('active'));
+
+                el.classList.add('active');
+                activeElement = el;
+
+                const key = el.getAttribute('data-key');
+                const text = explanations[key];
+
+                instructionBox.innerHTML = `<div class="text-left">${text.replace('text-yellow-300', 'text-blue-800').replace(/bg-blue-800/g, 'bg-blue-100')}</div>`;
+                instructionBox.classList.remove('bg-blue-50', 'text-blue-800', 'border-blue-200');
+                instructionBox.classList.add('bg-white', 'text-gray-800', 'border-gray-200');
+
+                tooltip.innerHTML = text;
+                tooltip.classList.add('show');
+
+                const rect = el.getBoundingClientRect();
+                const tooltipRect = tooltip.getBoundingClientRect();
+
+                let top = rect.top + window.scrollY - tooltipRect.height - 15;
+                let left = rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2);
+
+                if (left < 10) left = 10;
+                if (left + tooltipRect.width > window.innerWidth - 10) {
+                    left = window.innerWidth - tooltipRect.width - 10;
+                }
+
+                tooltip.classList.remove('bottom-placement');
+                if (top < window.scrollY + 10) {
+                    top = rect.bottom + window.scrollY + 15;
+                    tooltip.classList.add('bottom-placement');
+                }
+
+                tooltip.style.top = `${top}px`;
+                tooltip.style.left = `${left}px`;
+            });
+        });
+
+        document.addEventListener('click', () => {
+            tooltip.classList.remove('show');
+            if (activeElement) {
+                activeElement.classList.remove('active');
+                activeElement = null;
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (activeElement && tooltip.classList.contains('show')) {
+                activeElement.click(); 
+            }
+        });
+    </script>
+</body>
+</html>
